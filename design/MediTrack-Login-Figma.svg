@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<defs><linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F4FAFF"/><stop offset="1" stop-color="#DDEEFF"/></linearGradient><filter id="shadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#5287C0" flood-opacity="0.16"/></filter></defs>
+<rect x="0" y="0" width="1440" height="900" rx="0" fill="#F7FAFE" />
+<rect x="0" y="0" width="1440" height="82" rx="0" fill="#FFFFFF" />
+<line x1="0" y1="82" x2="1440" y2="82" stroke="#E6EFFA" stroke-width="1"/>
+<rect x="54" y="23" width="36" height="36" rx="10" fill="#3678E8" />
+<text x="72" y="49" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" text-anchor="middle" >+</text>
+<text x="102" y="49" fill="#17365E" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" text-anchor="start" >Medi</text>
+<text x="157" y="49" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" text-anchor="start" >Track</text>
+<text x="930" y="50" fill="#617D9C" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" text-anchor="start" >Why MediTrack</text>
+<text x="1080" y="50" fill="#617D9C" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" text-anchor="start" >Security</text>
+<text x="1240" y="50" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" text-anchor="start" >Need help?  Contact us →</text>
+<rect x="32" y="104" width="812" height="758" rx="25" fill="url(#panel)" />
+<circle cx="736" cy="178" r="177" fill="#FFFFFF" opacity="0.22"/>
+<circle cx="810" cy="188" r="240" fill="none" stroke="#BCD9FB" stroke-width="1" opacity="0.6"/>
+<circle cx="93" cy="172" r="5" fill="#3678E8" />
+<text x="109" y="177" fill="#3975C1" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="2" >THE SMARTER WAY TO CARE</text>
+<text x="86" y="267" fill="#17365E" font-family="Arial, Helvetica, sans-serif" font-size="53" font-weight="700" text-anchor="start" >Every medicine.</text>
+<text x="86" y="333" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="53" font-weight="700" text-anchor="start" >Every moment.</text>
+<text x="86" y="399" fill="#17365E" font-family="Arial, Helvetica, sans-serif" font-size="53" font-weight="700" text-anchor="start" >In your hands.</text>
+<text x="87" y="449" fill="#66809E" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" >Stay ahead of stock levels and expiry dates with a</text>
+<text x="87" y="475" fill="#66809E" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" >workspace built for the care you provide.</text>
+<rect x="86" y="520" width="142" height="46" rx="12" fill="#FFFFFF" stroke="#D9EAFD" stroke-width="1" />
+<text x="106" y="550" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="start" >□</text>
+<text x="131" y="549" fill="#355F91" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" text-anchor="start" >Stock clarity</text>
+<rect x="240" y="520" width="142" height="46" rx="12" fill="#FFFFFF" stroke="#D9EAFD" stroke-width="1" />
+<text x="260" y="550" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="start" >!</text>
+<text x="285" y="549" fill="#355F91" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" text-anchor="start" >Expiry alerts</text>
+<rect x="394" y="520" width="164" height="46" rx="12" fill="#FFFFFF" stroke="#D9EAFD" stroke-width="1" />
+<text x="414" y="550" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="start" >↗</text>
+<text x="439" y="549" fill="#355F91" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" text-anchor="start" >Better decisions</text>
+<rect x="244" y="605" width="535" height="210" rx="18" fill="#FFFFFF" filter="url(#shadow)"/>
+<rect x="244" y="605" width="535" height="38" rx="18" fill="#FAFCFF" />
+<line x1="244" y1="643" x2="779" y2="643" stroke="#EBF1F8" stroke-width="1"/>
+<circle cx="263" cy="624" r="4" fill="#F3AFA8" />
+<circle cx="277" cy="624" r="4" fill="#F2D58B" />
+<circle cx="291" cy="624" r="4" fill="#B5DCC9" />
+<text x="490" y="629" fill="#92A5BA" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" text-anchor="middle" >Inventory overview</text>
+<text x="270" y="682" fill="#17365E" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="start" >Good morning, Alex ✳</text>
+<text x="270" y="706" fill="#93A5B7" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="400" text-anchor="start" >Here’s how your inventory is looking today.</text>
+<rect x="270" y="723" width="232" height="69" rx="10" fill="#F7FAFE" stroke="#E5EDF7" stroke-width="1" />
+<text x="286" y="743" fill="#8099B3" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="700" text-anchor="start" letter-spacing="1" >IN STOCK</text>
+<text x="286" y="773" fill="#17365E" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" text-anchor="start" >1,284</text>
+<text x="448" y="770" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" text-anchor="middle" >↑ 8.2%</text>
+<rect x="521" y="723" width="232" height="69" rx="10" fill="#F7FAFE" stroke="#E5EDF7" stroke-width="1" />
+<text x="537" y="743" fill="#8099B3" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="700" text-anchor="start" letter-spacing="1" >EXPIRING SOON</text>
+<text x="537" y="773" fill="#17365E" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" text-anchor="start" >12</text>
+<text x="699" y="770" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" text-anchor="middle" >30 days</text>
+<text x="88" y="837" fill="#6684A7" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" text-anchor="start" >⌑  Built for peace of mind</text>
+<text x="768" y="837" fill="#6684A7" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" text-anchor="end" >© 2026 MediTrack</text>
+<rect x="868" y="104" width="540" height="758" rx="25" fill="#FFFFFF" stroke="#E7F0FA" stroke-width="1" />
+<rect x="921" y="168" width="26" height="3" rx="1" fill="#3678E8" />
+<text x="957" y="173" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="2" >WELCOME BACK</text>
+<text x="921" y="241" fill="#17365E" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" text-anchor="start" >Sign in to your</text>
+<text x="921" y="292" fill="#3678E8" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" text-anchor="start" >workspace.</text>
+<text x="921" y="328" fill="#8BA0B4" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" text-anchor="start" >Your inventory is ready when you are.</text>
+<text x="921" y="387" fill="#344F70" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" text-anchor="start" >Email address</text>
+<rect x="921" y="403" width="433" height="53" rx="10" fill="#FFFFFF" stroke="#DCE9F8" stroke-width="1" />
+<text x="940" y="437" fill="#A5B6C9" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="400" text-anchor="start" >✉</text>
+<text x="971" y="435" fill="#A5B6C9" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" text-anchor="start" >you@yourpharmacy.com</text>
+<text x="921" y="492" fill="#344F70" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" text-anchor="start" >Password</text>
+<rect x="921" y="508" width="433" height="53" rx="10" fill="#FFFFFF" stroke="#DCE9F8" stroke-width="1" />
+<text x="940" y="542" fill="#A5B6C9" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" text-anchor="start" >◇</text>
+<text x="971" y="540" fill="#A5B6C9" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" text-anchor="start" >Enter your password</text>
+<text x="1323" y="540" fill="#A5B6C9" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" text-anchor="middle" >◉</text>
+<rect x="921" y="582" width="16" height="16" rx="4" fill="#FFFFFF" stroke="#A8BFDA" stroke-width="1" />
+<text x="945" y="595" fill="#6E8299" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" text-anchor="start" >Remember me</text>
+<text x="1354" y="595" fill="#9AACC1" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" text-anchor="end" >Demo only</text>
+<rect x="921" y="625" width="433" height="54" rx="11" fill="#3678E8" />
+<text x="1138" y="659" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle" >Sign in to MediTrack  →</text>
+<line x1="921" y1="715" x2="1077" y2="715" stroke="#E4ECF5" stroke-width="1"/>
+<line x1="1198" y1="715" x2="1354" y2="715" stroke="#E4ECF5" stroke-width="1"/>
+<text x="1138" y="719" fill="#9DABBD" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" text-anchor="middle" letter-spacing="1.3" >OR TRY IT OUT</text>
+<rect x="921" y="741" width="433" height="52" rx="10" fill="#FFFFFF" stroke="#DCE9F8" stroke-width="1" />
+<text x="1138" y="774" fill="#286BD3" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" text-anchor="middle" >✦   Fill in demo account   →</text>
+<text x="1138" y="822" fill="#A1AFBF" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" text-anchor="middle" >Local preview • No real pharmacy data</text>
+</svg>
