@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ArrowRight, Bell, Box, Check, ChevronDown, Eye, EyeOff, HeartPulse, LockKeyhole, Mail, Menu, PackageCheck, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react'
 import './styles.css'
+import './theme.css'
 
 const DEMO_EMAIL = 'demo@meditrack.app'
 const DEMO_PASSWORD = 'MediTrack2026!'

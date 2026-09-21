@@ -1,0 +1,39 @@
+/* Light blue and white theme */
+:root { color: #193252; background: #f4f9ff; }
+.topbar, .form-panel { background: #fff; }
+.brand-mark, .submit-button { background: #3678e8; }
+.brand-accent, .brand small, .top-links a:hover, .nav-help a,
+.form-kicker, .form-wrap h2 span { color: #3678e8; }
+
+.story-panel {
+  color: #17365e;
+  background: radial-gradient(circle at 85% 19%, #d5eaff 0, transparent 36%),
+    linear-gradient(145deg, #f2f9ff 0%, #ddecff 100%);
+}
+.story-panel:before {
+  border-color: #86baff38;
+  box-shadow: 0 0 0 90px #86baff0c, 0 0 0 180px #86baff08;
+}
+.eyebrow { color: #3975c1; }
+.eyebrow-dot { background: #4a8deb; box-shadow: 0 0 0 4px #4a8deb25; }
+.story-panel h1 em { color: #3678e8; }
+.story-copy { color: #607b9c; }
+.feature-row { color: #355f91; }
+.feature-icon { background: #fff; color: #3678e8; box-shadow: 0 2px 12px #5b96db18; }
+.story-footer { color: #6684a7; }
+.visual-card { box-shadow: 0 25px 70px #3e77b02b; }
+
+.input-wrap:focus-within { border-color: #3678e8; box-shadow: 0 0 0 3px #3678e81a; }
+.remember input { accent-color: #3678e8; }
+.submit-button { box-shadow: 0 9px 20px #3678e82a; }
+.submit-button:hover { background: #2463ce; }
+.demo-button { color: #286bd3; }
+.demo-button:hover { background: #f1f7ff; }
+.form-footer svg { color: #3678e8; }
+
+.dashboard { background: #f4f9ff; }
+.dash-sidebar>a.active { background: #eaf3ff; color: #286bd3; }
+.dash-welcome { color: #3678e8; }
+.dash-icon { background: #eaf3ff; color: #3678e8; }
+.next-card { background: #edf6ff; border-color: #d8eaff; }
+.next-icon { background: #d9ebff; color: #3678e8; }
