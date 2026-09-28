@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   ArrowRight,
@@ -382,6 +382,31 @@ function App() {
 }
 
 function Dashboard({ onSignOut }) {
+  const [metrics, setMetrics] = useState({
+    inStock: 1284,
+    expiring: 12,
+    lowStock: 8,
+    isLive: false,
+  })
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/medicines/summary')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setMetrics({
+            inStock: data.data.totalStockQty || 0,
+            expiring: data.data.expiringSoonCount || 0,
+            lowStock: data.data.lowStockCount || 0,
+            isLive: true,
+          })
+        }
+      })
+      .catch(() => {
+        // Express backend offline, stay in demo preview mode
+      })
+  }, [])
+
   return (
     <div className="dashboard">
       <aside className="dash-sidebar">
@@ -443,10 +468,10 @@ function Dashboard({ onSignOut }) {
               </span>
 
               <small>Medicines in stock</small>
-              <strong>1,284</strong>
+              <strong>{metrics.inStock.toLocaleString()}</strong>
 
               <span className="dash-caption">
-                Demo preview
+                {metrics.isLive ? 'Live Express API' : 'Demo preview'}
               </span>
             </div>
 
@@ -456,24 +481,23 @@ function Dashboard({ onSignOut }) {
               </span>
 
               <small>Expiring soon</small>
-              <strong>12</strong>
+              <strong>{metrics.expiring}</strong>
 
               <span className="dash-caption">
-                Next 30 days · demo preview
+                Next 60 days {metrics.isLive ? '· Live DB' : '· demo preview'}
               </span>
             </div>
 
-            {/* NEW UI IMPLEMENTATION */}
             <div>
               <span className="dash-icon blue">
                 <PackageCheck />
               </span>
 
               <small>Low stock</small>
-              <strong>8</strong>
+              <strong>{metrics.lowStock}</strong>
 
               <span className="dash-caption">
-                Needs attention
+                {metrics.isLive ? 'Live Threshold' : 'Needs attention'}
               </span>
             </div>
           </div>
@@ -487,8 +511,9 @@ function Dashboard({ onSignOut }) {
               <strong>You’re signed in.</strong>
 
               <p>
-                The login flow is working. Inventory management and live
-                data are the next step once a backend is connected.
+                {metrics.isLive
+                  ? 'Connected to Express backend & MySQL meditrack_db database.'
+                  : 'Backend API ready at http://localhost:5000. Launch backend server to sync live inventory data.'}
               </p>
             </div>
           </div>
