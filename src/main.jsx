@@ -1,526 +1,140 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import {
-  ArrowRight,
-  Bell,
-  Box,
-  Check,
-  ChevronDown,
-  Eye,
-  EyeOff,
-  HeartPulse,
-  LockKeyhole,
-  Mail,
-  PackageCheck,
-  ShieldCheck,
-  Sparkles,
-  TrendingUp,
-} from 'lucide-react'
-
+import { ArrowLeft, ArrowRight, Bell, Box, Check, Eye, EyeOff, HeartPulse, LockKeyhole, Mail, PackageCheck, ShieldCheck, TrendingUp, UserRound } from 'lucide-react'
 import './styles.css'
 import './theme.css'
+import './auth.css'
 
-const DEMO_EMAIL = 'demo@meditrack.app'
-const DEMO_PASSWORD = 'MediTrack2026!'
-const SESSION_KEY = 'meditrack-demo-session'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const TOKEN_KEY = 'meditrack-token'
+const USER_KEY = 'meditrack-user'
 
-function Brand({ light = false }) {
-  return (
-    <div className={`brand ${light ? 'brand-light' : ''}`}>
-      <span className="brand-mark">
-        <HeartPulse size={21} strokeWidth={2.4} />
-      </span>
+async function api(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data.message || 'Request failed. Please try again.')
+  return data
+}
 
-      <span>
-        Medi
-        <span className="brand-accent">Track</span>
-        <small>.</small>
-      </span>
-    </div>
-  )
+function Brand() {
+  return <div className="brand"><span className="brand-mark"><HeartPulse size={21} strokeWidth={2.4}/></span><span>Medi<span className="brand-accent">Track</span><small>.</small></span></div>
 }
 
 function App() {
-  const [signedIn, setSignedIn] = useState(
-    () =>
-      sessionStorage.getItem(SESSION_KEY) === 'true' ||
-      localStorage.getItem(SESSION_KEY) === 'true'
-  )
+  const [session, setSession] = useState(() => {
+    const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY)
+    const rawUser = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY)
+    try { return token && rawUser ? { token, user: JSON.parse(rawUser) } : null } catch { return null }
+  })
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [remember, setRemember] = useState(false)
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  function signIn(event) {
-    event.preventDefault()
-    setError('')
-
-    if (!email.trim() || !password) {
-      return setError('Please enter your email and password.')
-    }
-
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
-      return setError('Enter a valid email address.')
-    }
-
-    setBusy(true)
-
-    window.setTimeout(() => {
-      setBusy(false)
-
-      if (
-        email.trim().toLowerCase() !== DEMO_EMAIL ||
-        password !== DEMO_PASSWORD
-      ) {
-        setError(
-          'Those details do not match the demo account. Use the demo sign-in below.'
-        )
-        return
-      }
-
-      const storage = remember ? localStorage : sessionStorage
-      storage.setItem(SESSION_KEY, 'true')
-      setSignedIn(true)
-    }, 450)
-  }
-
-  function useDemo() {
-    setEmail(DEMO_EMAIL)
-    setPassword(DEMO_PASSWORD)
-    setError('')
+  function completeAuth(data, remember) {
+    const storage = remember ? localStorage : sessionStorage
+    const other = remember ? sessionStorage : localStorage
+    other.removeItem(TOKEN_KEY); other.removeItem(USER_KEY)
+    storage.setItem(TOKEN_KEY, data.token); storage.setItem(USER_KEY, JSON.stringify(data.user))
+    setSession({ token: data.token, user: data.user })
   }
 
   function signOut() {
-    sessionStorage.removeItem(SESSION_KEY)
-    localStorage.removeItem(SESSION_KEY)
-    setSignedIn(false)
-    setPassword('')
+    for (const storage of [localStorage, sessionStorage]) { storage.removeItem(TOKEN_KEY); storage.removeItem(USER_KEY) }
+    setSession(null)
   }
 
-  if (signedIn) {
-    return <Dashboard onSignOut={signOut} />
-  }
-
-  return (
-    <div className="page-shell">
-      <header className="topbar">
-        <Brand />
-
-        <nav className="top-links" aria-label="Main navigation">
-          <a href="#features">Why MediTrack</a>
-          <a href="#security">Security</a>
-          <span className="nav-divider" />
-
-          <span className="nav-help">
-            Need help?{' '}
-            <a href="mailto:hello@meditrack.app">
-              Contact us <ArrowRight size={13} />
-            </a>
-          </span>
-        </nav>
-      </header>
-
-      <main className="login-layout">
-        <section
-          className="story-panel"
-          aria-label="MediTrack introduction"
-        >
-          <div className="story-content">
-            <div className="eyebrow">
-              <span className="eyebrow-dot" />
-              THE SMARTER WAY TO CARE
-            </div>
-
-            <h1>
-              Every medicine.
-              <br />
-              <em>Every moment.</em>
-              <br />
-              In your hands.
-            </h1>
-
-            <p className="story-copy">
-              Stay ahead of stock levels and expiry dates with an inventory
-              workspace that feels as thoughtful as the care you provide.
-            </p>
-
-            <div className="feature-row" id="features">
-              <span>
-                <span className="feature-icon">
-                  <PackageCheck size={18} />
-                </span>
-                Stock clarity
-              </span>
-
-              <span>
-                <span className="feature-icon">
-                  <Bell size={18} />
-                </span>
-                Expiry alerts
-              </span>
-
-              <span>
-                <span className="feature-icon">
-                  <TrendingUp size={18} />
-                </span>
-                Better decisions
-              </span>
-            </div>
-          </div>
-
-          <div className="visual-card" aria-hidden="true">
-            <div className="visual-card-header">
-              <span className="window-dots">
-                <i />
-                <i />
-                <i />
-              </span>
-
-              <span>Inventory overview</span>
-
-              <span className="visual-more">•••</span>
-            </div>
-
-            <div className="visual-card-inner">
-              <div className="mini-title">
-                Good morning, Alex <span>✳</span>
-              </div>
-
-              <div className="mini-subtitle">
-                Here's how your inventory is looking today.
-              </div>
-
-              <div className="mini-stats">
-                <div>
-                  <span className="mini-icon mint">
-                    <Box size={15} />
-                  </span>
-
-                  <small>In stock</small>
-                  <strong>1,284</strong>
-                  <span className="positive">↑ 8.2%</span>
-                </div>
-
-                <div>
-                  <span className="mini-icon peach">
-                    <Bell size={15} />
-                  </span>
-
-                  <small>Expiring soon</small>
-                  <strong>12</strong>
-                  <span className="muted">Next 30 days</span>
-                </div>
-              </div>
-
-              <div className="mini-chart">
-                <div className="chart-top">
-                  <span>Stock activity</span>
-
-                  <span>
-                    This month <ChevronDown size={10} />
-                  </span>
-                </div>
-
-                <div className="bars">
-                  {[37, 58, 46, 68, 55, 78, 64, 88, 70, 95, 80, 100].map(
-                    (v, i) => (
-                      <i
-                        key={i}
-                        style={{ height: `${v}%` }}
-                      />
-                    )
-                  )}
-                </div>
-
-                <div className="chart-labels">
-                  <span>1 Sep</span>
-                  <span>15 Sep</span>
-                  <span>30 Sep</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="story-footer">
-            <span>
-              <ShieldCheck size={17} /> Built for peace of mind
-            </span>
-
-            <span>© 2026 MediTrack</span>
-          </div>
-        </section>
-
-        <section className="form-panel">
-          <div className="form-wrap">
-            <div className="form-kicker">
-              <span className="kicker-line" />
-              WELCOME BACK
-            </div>
-
-            <h2>
-              Sign in to your
-              <br />
-              <span>workspace.</span>
-            </h2>
-
-            <p className="form-intro">
-              Your inventory is ready when you are.
-            </p>
-
-            <form onSubmit={signIn} noValidate>
-              <label htmlFor="email">Email address</label>
-
-              <div className="input-wrap">
-                <Mail size={19} />
-
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@yourpharmacy.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-
-              <label htmlFor="password">Password</label>
-
-              <div className="input-wrap">
-                <LockKeyhole size={19} />
-
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <button
-                  type="button"
-                  className="eye-button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={
-                    showPassword ? 'Hide password' : 'Show password'
-                  }
-                >
-                  {showPassword ? (
-                    <EyeOff size={19} />
-                  ) : (
-                    <Eye size={19} />
-                  )}
-                </button>
-              </div>
-
-              <div className="form-options">
-                <label className="remember">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                  />
-
-                  <span>Remember me</span>
-                </label>
-
-                <span className="forgot">
-                  Demo only · no password reset yet
-                </span>
-              </div>
-
-              {error && (
-                <p className="error" role="alert">
-                  {error}
-                </p>
-              )}
-
-              <button
-                className="submit-button"
-                type="submit"
-                disabled={busy}
-              >
-                {busy ? 'Signing in…' : 'Sign in to MediTrack'}
-
-                {!busy && <ArrowRight size={19} />}
-              </button>
-            </form>
-
-            <div className="divider">
-              <span>OR TRY IT OUT</span>
-            </div>
-
-            <button
-              className="demo-button"
-              type="button"
-              onClick={useDemo}
-            >
-              <Sparkles size={18} />
-              Fill in demo account
-              <ArrowRight size={17} />
-            </button>
-
-            <p className="demo-note">
-              This is a local preview. The demo account does not access real
-              patient or pharmacy data.
-            </p>
-          </div>
-
-          <div className="form-footer" id="security">
-            <ShieldCheck size={16} />
-            A thoughtfully protected workspace
-            <span className="footer-dot">·</span>
-            Local demo
-          </div>
-        </section>
-      </main>
-    </div>
-  )
+  return session ? <Dashboard session={session} onSignOut={signOut}/> : <AuthPage onAuthenticated={completeAuth}/>
 }
 
-function Dashboard({ onSignOut }) {
-  const [metrics, setMetrics] = useState({
-    inStock: 1284,
-    expiring: 12,
-    lowStock: 8,
-    isLive: false,
-  })
+function AuthPage({ onAuthenticated }) {
+  const [mode, setMode] = useState('login')
+  const [form, setForm] = useState({ full_name: '', username: '', email: '', password: '', newPassword: '' })
+  const [remember, setRemember] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState({ type: '', text: '' })
+  const update = (key) => (event) => setForm((value) => ({ ...value, [key]: event.target.value }))
+  const changeMode = (next) => { setMode(next); setMessage({ type: '', text: '' }); setShowPassword(false) }
+
+  async function submit(event) {
+    event.preventDefault(); setMessage({ type: '', text: '' }); setBusy(true)
+    try {
+      if (mode === 'login') {
+        const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email: form.email.trim(), password: form.password }) })
+        onAuthenticated(data, remember)
+      } else if (mode === 'register') {
+        if (form.password.length < 8) throw new Error('Password must contain at least 8 characters.')
+        const data = await api('/auth/register', { method: 'POST', body: JSON.stringify({ full_name: form.full_name.trim(), username: form.username.trim(), email: form.email.trim(), password: form.password }) })
+        onAuthenticated(data, true)
+      } else {
+        const data = await api('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email: form.email.trim(), newPassword: form.newPassword }) })
+        setForm((value) => ({ ...value, password: '', newPassword: '' })); setMessage({ type: 'success', text: data.message }); setMode('login')
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: error instanceof TypeError ? 'Cannot reach the backend. Start it with npm run server.' : error.message })
+    } finally { setBusy(false) }
+  }
+
+  const titles = {
+    login: ['WELCOME BACK', 'Sign in to your', 'workspace.', 'Your live inventory is ready when you are.'],
+    register: ['CREATE ACCOUNT', 'Start your', 'workspace.', 'Create an account stored securely in MySQL.'],
+    forgot: ['PASSWORD RESET', 'Reset your', 'password.', 'Choose a new password for your registered email.'],
+  }
+  const title = titles[mode]
+
+  return <div className="page-shell">
+    <header className="topbar"><Brand/><nav className="top-links" aria-label="Main navigation"><a href="#features">Why MediTrack</a><a href="#security">Security</a><span className="nav-divider"/><span className="nav-help">Connected workspace</span></nav></header>
+    <main className="login-layout">
+      <section className="story-panel" aria-label="MediTrack introduction">
+        <div className="story-content"><div className="eyebrow"><span className="eyebrow-dot"/> THE SMARTER WAY TO CARE</div><h1>Every medicine.<br/><em>Every moment.</em><br/>In your hands.</h1><p className="story-copy">Manage stock levels and expiry dates using live information from your pharmacy database.</p><div className="feature-row" id="features"><span><span className="feature-icon"><PackageCheck size={18}/></span> Stock clarity</span><span><span className="feature-icon"><Bell size={18}/></span> Expiry alerts</span><span><span className="feature-icon"><TrendingUp size={18}/></span> Live MySQL data</span></div></div>
+        <div className="visual-card auth-visual"><div className="visual-card-header"><span className="window-dots"><i/><i/><i/></span><span>Connected inventory</span><span className="visual-more">•••</span></div><div className="connected-preview"><span className="connected-icon"><Check/></span><div><strong>One secure workspace</strong><p>React frontend · Express API · MySQL database</p></div></div></div>
+        <div className="story-footer"><span><ShieldCheck size={17}/> Account protected</span><span>© 2026 MediTrack</span></div>
+      </section>
+      <section className="form-panel"><div className="form-wrap auth-form-wrap">
+        {mode !== 'login' && <button className="back-button" type="button" onClick={() => changeMode('login')}><ArrowLeft size={16}/> Back to sign in</button>}
+        <div className="form-kicker"><span className="kicker-line"/> {title[0]}</div><h2>{title[1]}<br/><span>{title[2]}</span></h2><p className="form-intro">{title[3]}</p>
+        <form onSubmit={submit} noValidate>
+          {mode === 'register' && <><label htmlFor="full-name">Full name</label><div className="input-wrap"><UserRound size={19}/><input id="full-name" autoComplete="name" placeholder="Your full name" value={form.full_name} onChange={update('full_name')} required/></div><label htmlFor="username">Username</label><div className="input-wrap"><UserRound size={19}/><input id="username" autoComplete="username" placeholder="Choose a username" value={form.username} onChange={update('username')} required/></div></>}
+          <label htmlFor="email">Email address</label><div className="input-wrap"><Mail size={19}/><input id="email" type="email" autoComplete="email" placeholder="you@yourpharmacy.com" value={form.email} onChange={update('email')} required/></div>
+          {mode !== 'forgot' && <><label htmlFor="password">Password</label><PasswordInput id="password" value={form.password} onChange={update('password')} show={showPassword} toggle={() => setShowPassword((value) => !value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'}/></>}
+          {mode === 'forgot' && <><label htmlFor="new-password">New password</label><PasswordInput id="new-password" value={form.newPassword} onChange={update('newPassword')} show={showPassword} toggle={() => setShowPassword((value) => !value)} autoComplete="new-password"/></>}
+          {mode === 'login' && <div className="form-options"><label className="remember"><input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)}/><span>Remember me</span></label><button className="text-button" type="button" onClick={() => changeMode('forgot')}>Forgot password?</button></div>}
+          {message.text && <p className={message.type === 'success' ? 'success-message' : 'error'} role="alert">{message.text}</p>}
+          <button className="submit-button" type="submit" disabled={busy}>{busy ? 'Please wait…' : mode === 'login' ? 'Sign in to MediTrack' : mode === 'register' ? 'Create my account' : 'Update password'} {!busy && <ArrowRight size={19}/>}</button>
+        </form>
+        {mode === 'login' && <div className="account-prompt"><span>New to MediTrack?</span><button type="button" onClick={() => changeMode('register')}>Create an account</button></div>}
+      </div><div className="form-footer" id="security"><ShieldCheck size={16}/> Connected to your Express and MySQL account system</div></section>
+    </main>
+  </div>
+}
+
+function PasswordInput({ id, value, onChange, show, toggle, autoComplete }) {
+  return <div className="input-wrap"><LockKeyhole size={19}/><input id={id} type={show ? 'text' : 'password'} autoComplete={autoComplete} placeholder="At least 8 characters" value={value} onChange={onChange} required/><button type="button" className="eye-button" onClick={toggle} aria-label={show ? 'Hide password' : 'Show password'}>{show ? <EyeOff size={19}/> : <Eye size={19}/>}</button></div>
+}
+
+function Dashboard({ session, onSignOut }) {
+  const [metrics, setMetrics] = useState({ totalStockQty: 0, expiringSoonCount: 0, lowStockCount: 0 })
+  const [medicines, setMedicines] = useState([])
+  const [state, setState] = useState({ loading: true, error: '' })
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/medicines/summary')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data) {
-          setMetrics({
-            inStock: data.data.totalStockQty || 0,
-            expiring: data.data.expiringSoonCount || 0,
-            lowStock: data.data.lowStockCount || 0,
-            isLive: true,
-          })
-        }
-      })
-      .catch(() => {
-        // Express backend offline, stay in demo preview mode
-      })
+    Promise.all([api('/medicines/summary'), api('/medicines')])
+      .then(([summary, list]) => { setMetrics(summary.data); setMedicines(list.data || []); setState({ loading: false, error: '' }) })
+      .catch((error) => setState({ loading: false, error: error instanceof TypeError ? 'Backend is offline. Run npm run server.' : error.message }))
   }, [])
 
-  return (
-    <div className="dashboard">
-      <aside className="dash-sidebar">
-        <Brand />
-
-        <div className="sidebar-label">WORKSPACE</div>
-
-        <a className="active" href="#overview">
-          <Box size={18} />
-          Overview
-        </a>
-
-        <a href="#inventory">
-          <PackageCheck size={18} />
-          Inventory
-          <span>Coming soon</span>
-        </a>
-
-        <a href="#alerts">
-          <Bell size={18} />
-          Expiry alerts
-          <span>Coming soon</span>
-        </a>
-
-        <div className="sidebar-bottom">
-          <div className="avatar">A</div>
-
-          <div>
-            <strong>Alex Morgan</strong>
-            <small>Demo account</small>
-          </div>
-        </div>
-      </aside>
-
-      <main className="dash-main">
-        <header>
-          <span>Workspace / Overview</span>
-
-          <button onClick={onSignOut}>
-            Sign out <ArrowRight size={16} />
-          </button>
-        </header>
-
-        <div className="dash-content" id="overview">
-          <div className="dash-welcome">
-            MONDAY, SEPTEMBER 21, 2026
-          </div>
-
-          <h1>
-            Welcome back, Alex <span>✳</span>
-          </h1>
-
-          <p>Here’s your medicine inventory at a glance.</p>
-
-          <div className="dash-grid">
-            <div>
-              <span className="dash-icon">
-                <Box />
-              </span>
-
-              <small>Medicines in stock</small>
-              <strong>{metrics.inStock.toLocaleString()}</strong>
-
-              <span className="dash-caption">
-                {metrics.isLive ? 'Live Express API' : 'Demo preview'}
-              </span>
-            </div>
-
-            <div>
-              <span className="dash-icon amber">
-                <Bell />
-              </span>
-
-              <small>Expiring soon</small>
-              <strong>{metrics.expiring}</strong>
-
-              <span className="dash-caption">
-                Next 60 days {metrics.isLive ? '· Live DB' : '· demo preview'}
-              </span>
-            </div>
-
-            <div>
-              <span className="dash-icon blue">
-                <PackageCheck />
-              </span>
-
-              <small>Low stock</small>
-              <strong>{metrics.lowStock}</strong>
-
-              <span className="dash-caption">
-                {metrics.isLive ? 'Live Threshold' : 'Needs attention'}
-              </span>
-            </div>
-          </div>
-
-          <div className="next-card">
-            <span className="next-icon">
-              <Check size={21} />
-            </span>
-
-            <div>
-              <strong>You’re signed in.</strong>
-
-              <p>
-                {metrics.isLive
-                  ? 'Connected to Express backend & MySQL meditrack_db database.'
-                  : 'Backend API ready at http://localhost:5000. Launch backend server to sync live inventory data.'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  )
+  const name = session.user.full_name || session.user.username
+  const firstName = name.split(' ')[0]
+  return <div className="dashboard"><aside className="dash-sidebar"><Brand/><div className="sidebar-label">WORKSPACE</div><a className="active" href="#overview"><Box size={18}/> Overview</a><a href="#inventory"><PackageCheck size={18}/> Inventory <span>{medicines.length}</span></a><a href="#alerts"><Bell size={18}/> Expiry alerts <span>{metrics.expiringSoonCount || 0}</span></a><div className="sidebar-bottom"><div className="avatar">{firstName[0]?.toUpperCase()}</div><div><strong>{name}</strong><small>{session.user.role}</small></div></div></aside>
+    <main className="dash-main"><header><span>Workspace / Overview</span><button onClick={onSignOut}>Sign out <ArrowRight size={16}/></button></header><div className="dash-content" id="overview"><div className="dash-welcome">LIVE INVENTORY</div><h1>Welcome back, {firstName}</h1><p>Here’s your medicine inventory from MySQL.</p>
+      <div className="dash-grid"><Metric icon={<Box/>} label="Units in stock" value={metrics.totalStockQty}/><Metric className="amber" icon={<Bell/>} label="Expiring soon" value={metrics.expiringSoonCount} caption="Next 60 days"/><Metric className="blue" icon={<PackageCheck/>} label="Low stock" value={metrics.lowStockCount} caption="Needs attention"/></div>
+      {state.error && <div className="data-error"><strong>Could not load MySQL data</strong><p>{state.error}</p></div>}
+      <section className="inventory-card" id="inventory"><div className="inventory-heading"><div><span>DATABASE RECORDS</span><h2>Medicine inventory</h2></div><strong>{state.loading ? 'Loading…' : `${medicines.length} items`}</strong></div>
+        {!state.loading && !state.error && medicines.length === 0 && <p className="empty-state">No medicine records found. Run <code>npm run db:init</code> to add the sample data.</p>}
+        {medicines.length > 0 && <div className="table-scroll"><table><thead><tr><th>Medicine</th><th>Batch</th><th>Stock</th><th>Expiry</th><th>Supplier</th></tr></thead><tbody>{medicines.map((medicine) => <tr key={medicine.id}><td><strong>{medicine.name}</strong><small>{medicine.category}</small></td><td>{medicine.batch_number}</td><td><span className={Number(medicine.stock_quantity) <= Number(medicine.min_stock_level) ? 'stock-low' : 'stock-ok'}>{medicine.stock_quantity}</span></td><td>{medicine.expiry_date}</td><td>{medicine.supplier_name || '—'}</td></tr>)}</tbody></table></div>}
+      </section>
+    </div></main></div>
 }
 
-createRoot(document.getElementById('root')).render(<App />)
+function Metric({ icon, label, value = 0, caption = 'Live MySQL data', className = '' }) {
+  return <div><span className={`dash-icon ${className}`}>{icon}</span><small>{label}</small><strong>{Number(value || 0).toLocaleString()}</strong><span className="dash-caption">{caption}</span></div>
+}
+
+createRoot(document.getElementById('root')).render(<App/>)

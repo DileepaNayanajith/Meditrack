@@ -122,6 +122,54 @@ export const login = async (req, res, next) => {
   }
 }
 
+// POST /api/auth/forgot-password
+// Local project reset flow. A production deployment should email a signed,
+// short-lived reset token instead of accepting a new password directly.
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email, newPassword } = req.body
+
+    if (!email || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and a new password are required.',
+      })
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must contain at least 8 characters.',
+      })
+    }
+
+    const [users] = await pool.query(
+      `SELECT id FROM users WHERE email = ?`,
+      [email.toLowerCase()]
+    )
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No account was found for that email address.',
+      })
+    }
+
+    const password_hash = await bcrypt.hash(newPassword, 10)
+    await pool.query(`UPDATE users SET password_hash = ? WHERE id = ?`, [
+      password_hash,
+      users[0].id,
+    ])
+
+    res.json({
+      success: true,
+      message: 'Password updated. You can now sign in.',
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 // GET /api/auth/me
 export const getCurrentUser = async (req, res, next) => {
   try {

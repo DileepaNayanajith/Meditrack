@@ -4,6 +4,7 @@ import {
   login,
   getCurrentUser,
   getAllUsers,
+  forgotPassword,
 } from '../controllers/authController.js'
 import { authenticateToken, requireAdmin } from '../middleware/authMiddleware.js'
 
@@ -11,6 +12,7 @@ const router = express.Router()
 
 router.post('/register', register)
 router.post('/login', login)
+router.post('/forgot-password', forgotPassword)
 router.get('/me', authenticateToken, getCurrentUser)
 router.get('/users', authenticateToken, requireAdmin, getAllUsers)
 
