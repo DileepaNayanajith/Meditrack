@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ArrowLeft, ArrowRight, Bell, Box, Check, Eye, EyeOff, HeartPulse, LockKeyhole, Mail, PackageCheck, ShieldCheck, TrendingUp, UserRound } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Box, Check, Eye, EyeOff, HeartPulse, LockKeyhole, Mail, Minus, PackageCheck, Plus, ReceiptText, Search, ShieldCheck, ShoppingCart, TrendingUp, UserRound } from 'lucide-react'
 import './styles.css'
 import './theme.css'
 import './auth.css'
@@ -113,24 +113,88 @@ function Dashboard({ session, onSignOut }) {
   const [metrics, setMetrics] = useState({ totalStockQty: 0, expiringSoonCount: 0, lowStockCount: 0 })
   const [medicines, setMedicines] = useState([])
   const [state, setState] = useState({ loading: true, error: '' })
+  const [view, setView] = useState('overview')
+  const [cart, setCart] = useState([])
+  const [search, setSearch] = useState('')
+  const [customer, setCustomer] = useState({ name: '', email: '', payment: 'cash' })
+  const [checkout, setCheckout] = useState({ busy: false, error: '', success: '' })
 
-  useEffect(() => {
+  const authenticatedApi = (path, options = {}) => api(path, { ...options, headers: { Authorization: `Bearer ${session.token}`, ...options.headers } })
+
+  function loadInventory() {
+    setState({ loading: true, error: '' })
     Promise.all([api('/medicines/summary'), api('/medicines')])
       .then(([summary, list]) => { setMetrics(summary.data); setMedicines(list.data || []); setState({ loading: false, error: '' }) })
       .catch((error) => setState({ loading: false, error: error instanceof TypeError ? 'Backend is offline. Run npm run server.' : error.message }))
-  }, [])
+  }
+
+  useEffect(loadInventory, [])
+
+  const today = new Date().toISOString().slice(0, 10)
+  const expiring = medicines.filter((item) => {
+    const days = Math.ceil((new Date(`${item.expiry_date}T00:00:00`) - new Date(`${today}T00:00:00`)) / 86400000)
+    return days <= 60
+  })
+  const sellable = medicines.filter((item) => item.expiry_date >= today && Number(item.stock_quantity) > 0 && item.name.toLowerCase().includes(search.toLowerCase()))
+  const cartTotal = cart.reduce((total, item) => total + Number(item.unit_price) * item.quantity, 0)
+
+  function addToCart(medicine) {
+    setCheckout({ busy: false, error: '', success: '' })
+    setCart((items) => {
+      const found = items.find((item) => item.id === medicine.id)
+      if (found) return items.map((item) => item.id === medicine.id ? { ...item, quantity: Math.min(item.quantity + 1, Number(item.stock_quantity)) } : item)
+      return [...items, { ...medicine, quantity: 1 }]
+    })
+  }
+
+  function changeQuantity(id, amount) {
+    setCart((items) => items.map((item) => item.id === id ? { ...item, quantity: Math.max(0, Math.min(item.quantity + amount, Number(item.stock_quantity))) } : item).filter((item) => item.quantity > 0))
+  }
+
+  async function completeSale(event) {
+    event.preventDefault(); setCheckout({ busy: true, error: '', success: '' })
+    try {
+      const data = await authenticatedApi('/sales', { method: 'POST', body: JSON.stringify({ customer_name: customer.name.trim(), customer_email: customer.email.trim(), payment_method: customer.payment, items: cart.map((item) => ({ medicine_id: item.id, quantity: item.quantity })) }) })
+      const emailMessage = customer.email ? (data.data.email.sent ? ' Receipt emailed.' : ' Sale saved; email is not configured.') : ''
+      setCheckout({ busy: false, error: '', success: `${data.message} Receipt ${data.data.sale_number}.${emailMessage}` })
+      setCart([]); setCustomer({ name: '', email: '', payment: 'cash' }); loadInventory()
+    } catch (error) { setCheckout({ busy: false, error: error.message, success: '' }) }
+  }
+
+  async function sendExpiryEmail() {
+    setCheckout({ busy: true, error: '', success: '' })
+    try {
+      const data = await authenticatedApi('/sales/expiry-alert', { method: 'POST', body: JSON.stringify({}) })
+      setCheckout({ busy: false, error: '', success: data.message })
+    } catch (error) { setCheckout({ busy: false, error: error.message, success: '' }) }
+  }
 
   const name = session.user.full_name || session.user.username
   const firstName = name.split(' ')[0]
-  return <div className="dashboard"><aside className="dash-sidebar"><Brand/><div className="sidebar-label">WORKSPACE</div><a className="active" href="#overview"><Box size={18}/> Overview</a><a href="#inventory"><PackageCheck size={18}/> Inventory <span>{medicines.length}</span></a><a href="#alerts"><Bell size={18}/> Expiry alerts <span>{metrics.expiringSoonCount || 0}</span></a><div className="sidebar-bottom"><div className="avatar">{firstName[0]?.toUpperCase()}</div><div><strong>{name}</strong><small>{session.user.role}</small></div></div></aside>
-    <main className="dash-main"><header><span>Workspace / Overview</span><button onClick={onSignOut}>Sign out <ArrowRight size={16}/></button></header><div className="dash-content" id="overview"><div className="dash-welcome">LIVE INVENTORY</div><h1>Welcome back, {firstName}</h1><p>Here’s your medicine inventory from MySQL.</p>
-      <div className="dash-grid"><Metric icon={<Box/>} label="Units in stock" value={metrics.totalStockQty}/><Metric className="amber" icon={<Bell/>} label="Expiring soon" value={metrics.expiringSoonCount} caption="Next 60 days"/><Metric className="blue" icon={<PackageCheck/>} label="Low stock" value={metrics.lowStockCount} caption="Needs attention"/></div>
-      {state.error && <div className="data-error"><strong>Could not load MySQL data</strong><p>{state.error}</p></div>}
-      <section className="inventory-card" id="inventory"><div className="inventory-heading"><div><span>DATABASE RECORDS</span><h2>Medicine inventory</h2></div><strong>{state.loading ? 'Loading…' : `${medicines.length} items`}</strong></div>
-        {!state.loading && !state.error && medicines.length === 0 && <p className="empty-state">No medicine records found. Run <code>npm run db:init</code> to add the sample data.</p>}
-        {medicines.length > 0 && <div className="table-scroll"><table><thead><tr><th>Medicine</th><th>Batch</th><th>Stock</th><th>Expiry</th><th>Supplier</th></tr></thead><tbody>{medicines.map((medicine) => <tr key={medicine.id}><td><strong>{medicine.name}</strong><small>{medicine.category}</small></td><td>{medicine.batch_number}</td><td><span className={Number(medicine.stock_quantity) <= Number(medicine.min_stock_level) ? 'stock-low' : 'stock-ok'}>{medicine.stock_quantity}</span></td><td>{medicine.expiry_date}</td><td>{medicine.supplier_name || '—'}</td></tr>)}</tbody></table></div>}
-      </section>
-    </div></main></div>
+  return <div className="dashboard"><aside className="dash-sidebar"><Brand/><div className="sidebar-label">WORKSPACE</div><button className={view === 'overview' ? 'active' : ''} onClick={() => setView('overview')}><Box size={18}/> Overview</button><button className={view === 'pos' ? 'active' : ''} onClick={() => setView('pos')}><ShoppingCart size={18}/> Point of sale <span>{cart.length || ''}</span></button><button className={view === 'expiry' ? 'active' : ''} onClick={() => setView('expiry')}><Bell size={18}/> Expiry alerts <span>{expiring.length}</span></button><div className="sidebar-bottom"><div className="avatar">{firstName[0]?.toUpperCase()}</div><div><strong>{name}</strong><small>{session.user.role}</small></div></div></aside>
+    <main className="dash-main"><header><span>Workspace / {view === 'pos' ? 'Point of sale' : view === 'expiry' ? 'Expiry alerts' : 'Overview'}</span><button onClick={onSignOut}>Sign out <ArrowRight size={16}/></button></header>
+      {view === 'overview' && <Overview firstName={firstName} metrics={metrics} medicines={medicines} state={state}/>}
+      {view === 'pos' && <POS medicines={sellable} search={search} setSearch={setSearch} cart={cart} addToCart={addToCart} changeQuantity={changeQuantity} total={cartTotal} customer={customer} setCustomer={setCustomer} checkout={checkout} completeSale={completeSale}/>}
+      {view === 'expiry' && <ExpiryView items={expiring} today={today} checkout={checkout} sendExpiryEmail={sendExpiryEmail} canEmail={session.user.role === 'admin'}/>}
+    </main></div>
+}
+
+function Overview({ firstName, metrics, medicines, state }) {
+  return <div className="dash-content" id="overview"><div className="dash-welcome">LIVE INVENTORY</div><h1>Welcome back, {firstName}</h1><p>Here’s your medicine inventory from MySQL.</p><div className="dash-grid"><Metric icon={<Box/>} label="Units in stock" value={metrics.totalStockQty}/><Metric className="amber" icon={<Bell/>} label="Expiring soon" value={metrics.expiringSoonCount} caption="Next 60 days"/><Metric className="blue" icon={<PackageCheck/>} label="Low stock" value={metrics.lowStockCount} caption="Needs attention"/></div>{state.error && <div className="data-error"><strong>Could not load MySQL data</strong><p>{state.error}</p></div>}<InventoryTable medicines={medicines} loading={state.loading}/></div>
+}
+
+function InventoryTable({ medicines, loading }) {
+  return <section className="inventory-card"><div className="inventory-heading"><div><span>DATABASE RECORDS</span><h2>Medicine inventory</h2></div><strong>{loading ? 'Loading…' : `${medicines.length} items`}</strong></div>{!loading && medicines.length === 0 && <p className="empty-state">No medicine records found.</p>}{medicines.length > 0 && <div className="table-scroll"><table><thead><tr><th>Medicine</th><th>Batch</th><th>Stock</th><th>Expiry</th><th>Supplier</th></tr></thead><tbody>{medicines.map((medicine) => <tr key={medicine.id}><td><strong>{medicine.name}</strong><small>{medicine.category}</small></td><td>{medicine.batch_number}</td><td><span className={Number(medicine.stock_quantity) <= Number(medicine.min_stock_level) ? 'stock-low' : 'stock-ok'}>{medicine.stock_quantity}</span></td><td>{medicine.expiry_date}</td><td>{medicine.supplier_name || '—'}</td></tr>)}</tbody></table></div>}</section>
+}
+
+function POS({ medicines, search, setSearch, cart, addToCart, changeQuantity, total, customer, setCustomer, checkout, completeSale }) {
+  return <div className="pos-page"><section className="product-panel"><div className="pos-title"><div><span>POINT OF SALE</span><h1>New sale</h1></div><div className="pos-search"><Search size={18}/><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search medicine…"/></div></div><div className="product-grid">{medicines.map((medicine) => <button className="product-card" key={medicine.id} onClick={() => addToCart(medicine)}><span className="product-icon"><PackageCheck/></span><strong>{medicine.name}</strong><small>{medicine.batch_number} · expires {medicine.expiry_date}</small><div><b>LKR {Number(medicine.unit_price).toFixed(2)}</b><span>{medicine.stock_quantity} in stock</span></div></button>)}</div></section>
+    <form className="cart-panel" onSubmit={completeSale}><div className="cart-heading"><ShoppingCart size={20}/><div><strong>Current sale</strong><small>{cart.length} product(s)</small></div></div><div className="cart-items">{cart.length === 0 && <div className="cart-empty"><ShoppingCart/><p>Select a medicine to begin.</p></div>}{cart.map((item) => <div className="cart-item" key={item.id}><div><strong>{item.name}</strong><small>LKR {Number(item.unit_price).toFixed(2)} each</small></div><div className="quantity"><button type="button" onClick={() => changeQuantity(item.id, -1)}><Minus/></button><span>{item.quantity}</span><button type="button" onClick={() => changeQuantity(item.id, 1)}><Plus/></button></div><b>LKR {(Number(item.unit_price) * item.quantity).toFixed(2)}</b></div>)}</div><div className="customer-fields"><label>Customer name <input value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} placeholder="Optional"/></label><label>Customer email <input type="email" value={customer.email} onChange={(e) => setCustomer({ ...customer, email: e.target.value })} placeholder="Email receipt"/></label><label>Payment method <select value={customer.payment} onChange={(e) => setCustomer({ ...customer, payment: e.target.value })}><option value="cash">Cash</option><option value="card">Card</option><option value="other">Other</option></select></label></div>{checkout.error && <p className="checkout-error">{checkout.error}</p>}{checkout.success && <p className="checkout-success">{checkout.success}</p>}<div className="cart-total"><span>Total</span><strong>LKR {total.toFixed(2)}</strong></div><button className="checkout-button" disabled={!cart.length || checkout.busy}>{checkout.busy ? 'Processing…' : <><ReceiptText/> Complete sale</>}</button></form>
+  </div>
+}
+
+function ExpiryView({ items, today, checkout, sendExpiryEmail, canEmail }) {
+  return <div className="dash-content"><div className="expiry-header"><div><div className="dash-welcome">STOCK SAFETY</div><h1>Expiry alerts</h1><p>Expired items are blocked automatically at checkout.</p></div>{canEmail && <button className="email-alert-button" onClick={sendExpiryEmail} disabled={checkout.busy}><Mail size={17}/> Email alert</button>}</div>{checkout.error && <div className="data-error"><strong>Email not sent</strong><p>{checkout.error}</p></div>}{checkout.success && <p className="success-message">{checkout.success}</p>}<div className="expiry-list">{items.map((item) => { const days = Math.ceil((new Date(`${item.expiry_date}T00:00:00`) - new Date(`${today}T00:00:00`)) / 86400000); return <article className={days < 0 ? 'expired' : ''} key={item.id}><span><AlertTriangle/></span><div><strong>{item.name}</strong><small>Batch {item.batch_number} · {item.stock_quantity} unit(s)</small></div><div><b>{days < 0 ? 'Expired' : `${days} days left`}</b><small>{item.expiry_date}</small></div></article> })}{items.length === 0 && <p className="empty-state">No medicines expire within the next 60 days.</p>}</div></div>
 }
 
 function Metric({ icon, label, value = 0, caption = 'Live MySQL data', className = '' }) {

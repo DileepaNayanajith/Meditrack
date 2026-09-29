@@ -82,6 +82,31 @@ npm run dev
 
 ## 📡 API Endpoint Reference
 
+## Point of Sale Setup
+
+After pulling the POS changes, add the sales tables without deleting existing inventory:
+
+```bash
+npm run db:migrate
+```
+
+The Point of Sale screen records each sale and its line items in one MySQL transaction. It blocks expired batches and insufficient stock, then reduces inventory only after every item passes validation.
+
+### Email receipts and expiry alerts
+
+Add SMTP settings to `backend/.env`. For Gmail, enable two-step verification and create a Google App Password. Do not use or commit the normal Gmail password.
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_16_character_app_password
+EMAIL_FROM=MediTrack <your_email@gmail.com>
+ALERT_EMAIL=pharmacy_owner@example.com
+```
+
+Customer receipts are sent after a sale when a customer email is entered. Admin users can send the current 60-day expiry report from the Expiry Alerts screen. A mail failure never reverses or loses a completed sale; its result is recorded in `email_notifications`.
+
 ### 💊 Medicines API (`/api/medicines`)
 - **`GET /api/medicines`**: List all medicines (supports filtering by `category`, `status` (`low`, `expiring`, `expired`), search `q`, and sorting).
 - **`GET /api/medicines/summary`**: Get dashboard summary statistics (total stock, low stock count, expiring count, total value).

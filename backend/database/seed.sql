@@ -7,6 +7,9 @@ USE meditrack_db;
 
 -- Clear existing data in reverse order of foreign key dependency
 SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE email_notifications;
+TRUNCATE TABLE sale_items;
+TRUNCATE TABLE sales;
 TRUNCATE TABLE medicines;
 TRUNCATE TABLE suppliers;
 TRUNCATE TABLE users;

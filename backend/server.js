@@ -8,6 +8,7 @@ import { testConnection } from './config/db.js'
 import medicineRoutes from './routes/medicineRoutes.js'
 import supplierRoutes from './routes/supplierRoutes.js'
 import authRoutes from './routes/authRoutes.js'
+import salesRoutes from './routes/salesRoutes.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
 
 dotenv.config()
@@ -61,6 +62,7 @@ app.get('/', (req, res) => {
 app.use('/api/medicines', medicineRoutes)
 app.use('/api/suppliers', supplierRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/sales', salesRoutes)
 
 // Error Handling Middleware
 app.use(notFound)
