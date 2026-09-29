@@ -41,7 +41,7 @@ npm run db:init
 Create or inspect the [`.env`](file:///c:/Users/yashodha/OneDrive/Desktop/CAMPUS/Projects/Meditrack/backend/.env) file inside the `backend/` directory based on [`.env.example`](file:///c:/Users/yashodha/OneDrive/Desktop/CAMPUS/Projects/Meditrack/backend/.env.example):
 
 ```env
-PORT=5000
+PORT=5001
 NODE_ENV=development
 
 # Local MySQL Credentials
@@ -70,7 +70,7 @@ Or for auto-reloading during development:
 ```bash
 npm run server:dev
 ```
-> The API will be live at: **`http://localhost:5000`**
+> The API will be live at: **`http://localhost:5001`**
 
 #### Run Frontend React Server (in a separate terminal)
 ```bash
