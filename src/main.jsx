@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Box, Check, ClipboardList, Eye, EyeOff, HeartPulse, LockKeyhole, Mail, Minus, PackageCheck, Pencil, Plus, ReceiptText, Search, ShieldCheck, ShoppingCart, Trash2, TrendingUp, UserRound, X } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Box, Check, ClipboardList, DollarSign, Eye, EyeOff, HeartPulse, LayoutDashboard, LockKeyhole, Mail, Minus, PackageCheck, Pencil, Plus, ReceiptText, Search, ShieldCheck, ShoppingCart, Trash2, TrendingUp, UserRound, X } from 'lucide-react'
 import './styles.css'
 import './theme.css'
 import './auth.css'
@@ -110,7 +110,7 @@ function PasswordInput({ id, value, onChange, show, toggle, autoComplete }) {
 }
 
 function Dashboard({ session, onSignOut }) {
-  const [metrics, setMetrics] = useState({ totalStockQty: 0, expiringSoonCount: 0, lowStockCount: 0 })
+  const [metrics, setMetrics] = useState({ totalStockQty: 0, totalInventoryValue: 0, expiringSoonCount: 0, lowStockCount: 0, expiredCount: 0 })
   const [medicines, setMedicines] = useState([])
   const [state, setState] = useState({ loading: true, error: '' })
   const [view, setView] = useState('overview')
@@ -189,11 +189,14 @@ function Dashboard({ session, onSignOut }) {
       {view === 'pos' && <POS medicines={sellable} search={search} setSearch={setSearch} cart={cart} addToCart={addToCart} changeQuantity={changeQuantity} total={cartTotal} customer={customer} setCustomer={setCustomer} checkout={checkout} completeSale={completeSale}/>}
       {view === 'sales' && <SalesHistory sales={sales} state={salesState}/>}
       {view === 'expiry' && <ExpiryView items={expiring} today={today} checkout={checkout} sendExpiryEmail={sendExpiryEmail} canEmail={session.user.role === 'admin'}/>}
-    </main></div>
+    </main><nav className="mobile-nav" aria-label="Mobile navigation"><button className={view === 'overview' ? 'active' : ''} onClick={() => setView('overview')}><LayoutDashboard/><span>Home</span></button><button className={view === 'inventory' ? 'active' : ''} onClick={() => setView('inventory')}><PackageCheck/><span>Stock</span></button><button className={view === 'pos' ? 'active pos-mobile' : 'pos-mobile'} onClick={() => setView('pos')}><ShoppingCart/><span>Sale</span></button><button className={view === 'sales' ? 'active' : ''} onClick={() => setView('sales')}><ClipboardList/><span>History</span></button><button className={view === 'expiry' ? 'active' : ''} onClick={() => setView('expiry')}><Bell/><span>Alerts</span></button></nav></div>
 }
 
 function Overview({ firstName, metrics, medicines, state }) {
-  return <div className="dash-content" id="overview"><div className="dash-welcome">LIVE INVENTORY</div><h1>Welcome back, {firstName}</h1><p>Here’s your medicine inventory from MySQL.</p><div className="dash-grid"><Metric icon={<Box/>} label="Units in stock" value={metrics.totalStockQty}/><Metric className="amber" icon={<Bell/>} label="Expiring soon" value={metrics.expiringSoonCount} caption="Next 60 days"/><Metric className="blue" icon={<PackageCheck/>} label="Low stock" value={metrics.lowStockCount} caption="Needs attention"/></div>{state.error && <div className="data-error"><strong>Could not load MySQL data</strong><p>{state.error}</p></div>}<InventoryTable medicines={medicines} loading={state.loading}/></div>
+  const lowStock = medicines.filter((item) => Number(item.stock_quantity) <= Number(item.min_stock_level)).slice(0, 4)
+  const healthyCount = Math.max(0, medicines.length - Number(metrics.lowStockCount || 0) - Number(metrics.expiredCount || 0))
+  const healthPercent = medicines.length ? Math.round((healthyCount / medicines.length) * 100) : 0
+  return <div className="dash-content overview-page" id="overview"><div className="overview-hero"><div><div className="dash-welcome">LIVE INVENTORY</div><h1>Welcome back, {firstName}</h1><p>Here’s your pharmacy performance and stock health today.</p></div><div className="live-badge"><i/> Live database</div></div><div className="dash-grid dashboard-kpis"><Metric icon={<Box/>} label="Units in stock" value={metrics.totalStockQty}/><Metric className="value" icon={<DollarSign/>} label="Inventory value" value={`LKR ${Number(metrics.totalInventoryValue || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} caption="Current stock value"/><Metric className="amber" icon={<Bell/>} label="Expiring soon" value={metrics.expiringSoonCount} caption="Next 60 days"/><Metric className="danger" icon={<AlertTriangle/>} label="Expired items" value={metrics.expiredCount} caption="Action required"/></div>{state.error && <div className="data-error"><strong>Could not load MySQL data</strong><p>{state.error}</p></div>}<div className="insight-grid"><section className="health-card"><div className="card-heading"><div><span>STOCK HEALTH</span><h2>Inventory overview</h2></div><strong>{healthPercent}%</strong></div><div className="health-track"><i style={{ width: `${healthPercent}%` }}/></div><div className="health-legend"><span><i className="healthy"/> Healthy <b>{healthyCount}</b></span><span><i className="warning"/> Low stock <b>{metrics.lowStockCount}</b></span><span><i className="expired-dot"/> Expired <b>{metrics.expiredCount}</b></span></div></section><section className="attention-card"><div className="card-heading"><div><span>NEEDS ATTENTION</span><h2>Low stock items</h2></div><PackageCheck/></div>{lowStock.map((item) => <div className="attention-row" key={item.id}><div><strong>{item.name}</strong><small>Batch {item.batch_number}</small></div><span>{item.stock_quantity} left</span></div>)}{lowStock.length === 0 && <p className="all-good"><Check/> All stock levels look healthy.</p>}</section></div><InventoryTable medicines={medicines} loading={state.loading}/></div>
 }
 
 function InventoryTable({ medicines, loading }) {
@@ -257,7 +260,8 @@ function ExpiryView({ items, today, checkout, sendExpiryEmail, canEmail }) {
 }
 
 function Metric({ icon, label, value = 0, caption = 'Live MySQL data', className = '' }) {
-  return <div><span className={`dash-icon ${className}`}>{icon}</span><small>{label}</small><strong>{Number(value || 0).toLocaleString()}</strong><span className="dash-caption">{caption}</span></div>
+  const formatted = typeof value === 'number' ? Number(value || 0).toLocaleString() : value
+  return <div><span className={`dash-icon ${className}`}>{icon}</span><small>{label}</small><strong>{formatted}</strong><span className="dash-caption">{caption}</span></div>
 }
 
 createRoot(document.getElementById('root')).render(<App/>)
