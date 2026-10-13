@@ -1,39 +1,75 @@
-/* Light blue and white theme */
-:root { color: #193252; background: #f4f9ff; }
-.topbar, .form-panel { background: #fff; }
-.brand-mark, .submit-button { background: #3678e8; }
-.brand-accent, .brand small, .top-links a:hover, .nav-help a,
-.form-kicker, .form-wrap h2 span { color: #3678e8; }
-
-.story-panel {
-  color: #17365e;
-  background: radial-gradient(circle at 85% 19%, #d5eaff 0, transparent 36%),
-    linear-gradient(145deg, #f2f9ff 0%, #ddecff 100%);
+/* MediTrack minimal futuristic design system */
+:root {
+  --ink: #0b172a;
+  --muted: #6f8197;
+  --line: #dce7f2;
+  --surface: #ffffff;
+  --canvas: #f4f8fc;
+  --primary: #2563eb;
+  --primary-deep: #1749b8;
+  --cyan: #06b6d4;
+  color: var(--ink);
+  background: var(--canvas);
 }
-.story-panel:before {
-  border-color: #86baff38;
-  box-shadow: 0 0 0 90px #86baff0c, 0 0 0 180px #86baff08;
+body { background: var(--canvas); }
+h1, h2, .brand, .dash-grid strong, .sales-total strong { font-family: 'Space Grotesk', sans-serif; }
+.topbar, .form-panel, .dash-sidebar, .dash-main header { background: rgba(255,255,255,.96); }
+.topbar { border-bottom: 1px solid #e8eff6; }
+.brand { color: var(--ink); letter-spacing: -1px; }
+.brand-mark { background: linear-gradient(145deg, var(--primary), var(--cyan)); border-radius: 10px; box-shadow: 0 8px 20px #2563eb26; }
+.brand-accent, .brand small, .top-links a:hover, .nav-help, .form-kicker, .form-wrap h2 span, .dash-welcome { color: var(--primary); }
+.story-panel { color: var(--ink); background: linear-gradient(#d7e7ff 1px, transparent 1px), linear-gradient(90deg, #d7e7ff 1px, transparent 1px), radial-gradient(circle at 78% 20%, #c7f5ff 0, transparent 28%), #eef5ff; background-size: 44px 44px, 44px 44px, auto, auto; }
+.story-panel:before { width: 430px; height: 430px; right: -210px; top: -150px; border-color: #2563eb20; box-shadow: 0 0 0 70px #2563eb08, 0 0 0 140px #06b6d406; }
+.eyebrow { color: #3569b8; }
+.eyebrow-dot { background: var(--cyan); box-shadow: 0 0 0 4px #06b6d420; }
+.story-panel h1 { letter-spacing: -3.2px; }
+.story-panel h1 em { color: var(--primary); }
+.story-copy, .story-footer { color: #5f7590; }
+.feature-row { color: #345675; }
+.feature-icon { color: var(--primary); background: #fff; border: 1px solid #dbe8f6; box-shadow: none; }
+.visual-card { border: 1px solid #d8e5f2; border-radius: 14px; box-shadow: 0 22px 60px #1a4e8b1b; transform: rotate(-1deg); }
+.connected-icon { color: var(--primary); background: #eaf2ff; }
+.form-wrap h2 { color: var(--ink); letter-spacing: -2.5px; }
+.form-intro, .account-prompt { color: var(--muted); }
+.input-wrap { border-color: var(--line); border-radius: 9px; background: #fbfdff; }
+.input-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px #2563eb14; background: #fff; }
+.submit-button, .primary-action, .checkout-button, .email-alert-button { background: var(--primary); border-radius: 9px; box-shadow: none; }
+.submit-button:hover, .primary-action:hover, .checkout-button:hover, .email-alert-button:hover { background: var(--primary-deep); }
+.remember input { accent-color: var(--primary); }
+.back-button, .text-button, .account-prompt button { color: var(--primary); }
+.dashboard { background: var(--canvas); }
+.dash-sidebar { border-color: var(--line); }
+.dash-sidebar>button { color: #718399; border-radius: 8px; }
+.dash-sidebar>button.active { color: var(--primary); background: #edf4ff; box-shadow: inset 3px 0 var(--primary); }
+.avatar { color: var(--primary-deep); background: #e6f0ff; }
+.dash-main header { border-color: var(--line); }
+.dash-main header button { border-color: var(--line); color: #415873; }
+.live-badge { border-color: #cfe9e9; color: #27747f; background: #f5ffff; }
+.live-badge i { background: var(--cyan); box-shadow: 0 0 0 4px #06b6d41a; }
+.dash-grid>div, .health-card, .attention-card, .inventory-card, .product-card, .cart-panel { border-color: var(--line); border-radius: 13px; box-shadow: 0 8px 26px #315b8509; }
+.dash-grid>div:hover, .product-card:hover { border-color: #b7cdf0; box-shadow: 0 14px 30px #315b8510; }
+.dash-icon { color: var(--primary); background: #eaf2ff; border-radius: 9px; }
+.dash-icon.value { color: #07849a; background: #e5f9fc; }
+.dash-icon.amber { color: #b7791f; background: #fff7e6; }
+.dash-icon.danger { color: #c24158; background: #fff0f3; }
+.health-track { background: #e9f0f7; }
+.health-track i { background: linear-gradient(90deg, var(--primary), var(--cyan)); }
+.card-heading span, .inventory-heading span, .pos-title span, .modal-title span { color: var(--primary); }
+.stock-ok { color: #087a63; background: #e7f8f3; }
+.stock-low { color: #a75d17; background: #fff4e7; }
+.payment-pill { color: #225ab4; background: #eaf2ff; }
+.pos-page, .product-panel { background: var(--canvas); }
+.pos-search, .medicine-fields input, .customer-fields input, .customer-fields select { border-color: var(--line); border-radius: 8px; }
+.product-icon { color: var(--primary); background: #eaf2ff; border-radius: 8px; }
+.product-card b { color: var(--primary); }
+.quantity button, .row-actions button { color: var(--primary); border-color: var(--line); }
+.medicine-modal { border: 1px solid #cfddeb; border-radius: 14px; }
+.modal-backdrop { background: #0714268f; }
+.sales-total { color: var(--primary); background: #edf5ff; border-color: #d4e5fb; }
+.mobile-nav { border-color: var(--line); }
+.mobile-nav button.active { color: var(--primary); }
+.mobile-nav .pos-mobile svg { background: var(--primary); }
+@media (prefers-reduced-motion: no-preference) {
+  .submit-button, .primary-action, .product-card, .dash-grid>div, .row-actions button { transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+  .submit-button:hover, .primary-action:hover { transform: translateY(-1px); }
 }
-.eyebrow { color: #3975c1; }
-.eyebrow-dot { background: #4a8deb; box-shadow: 0 0 0 4px #4a8deb25; }
-.story-panel h1 em { color: #3678e8; }
-.story-copy { color: #607b9c; }
-.feature-row { color: #355f91; }
-.feature-icon { background: #fff; color: #3678e8; box-shadow: 0 2px 12px #5b96db18; }
-.story-footer { color: #6684a7; }
-.visual-card { box-shadow: 0 25px 70px #3e77b02b; }
-
-.input-wrap:focus-within { border-color: #3678e8; box-shadow: 0 0 0 3px #3678e81a; }
-.remember input { accent-color: #3678e8; }
-.submit-button { box-shadow: 0 9px 20px #3678e82a; }
-.submit-button:hover { background: #2463ce; }
-.demo-button { color: #286bd3; }
-.demo-button:hover { background: #f1f7ff; }
-.form-footer svg { color: #3678e8; }
-
-.dashboard { background: #f4f9ff; }
-.dash-sidebar>a.active { background: #eaf3ff; color: #286bd3; }
-.dash-welcome { color: #3678e8; }
-.dash-icon { background: #eaf3ff; color: #3678e8; }
-.next-card { background: #edf6ff; border-color: #d8eaff; }
-.next-icon { background: #d9ebff; color: #3678e8; }
