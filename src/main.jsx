@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Box, Check, Eye, EyeOff, HeartPulse, LockKeyhole, Mail, Minus, PackageCheck, Plus, ReceiptText, Search, ShieldCheck, ShoppingCart, TrendingUp, UserRound } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Box, Check, ClipboardList, Eye, EyeOff, HeartPulse, LockKeyhole, Mail, Minus, PackageCheck, Pencil, Plus, ReceiptText, Search, ShieldCheck, ShoppingCart, Trash2, TrendingUp, UserRound, X } from 'lucide-react'
 import './styles.css'
 import './theme.css'
 import './auth.css'
@@ -118,6 +118,8 @@ function Dashboard({ session, onSignOut }) {
   const [search, setSearch] = useState('')
   const [customer, setCustomer] = useState({ name: '', email: '', payment: 'cash' })
   const [checkout, setCheckout] = useState({ busy: false, error: '', success: '' })
+  const [sales, setSales] = useState([])
+  const [salesState, setSalesState] = useState({ loading: false, error: '' })
 
   const authenticatedApi = (path, options = {}) => api(path, { ...options, headers: { Authorization: `Bearer ${session.token}`, ...options.headers } })
 
@@ -129,6 +131,14 @@ function Dashboard({ session, onSignOut }) {
   }
 
   useEffect(loadInventory, [])
+
+  useEffect(() => {
+    if (view !== 'sales') return
+    setSalesState({ loading: true, error: '' })
+    authenticatedApi('/sales')
+      .then((data) => { setSales(data.data || []); setSalesState({ loading: false, error: '' }) })
+      .catch((error) => setSalesState({ loading: false, error: error.message }))
+  }, [view])
 
   const today = new Date().toISOString().slice(0, 10)
   const expiring = medicines.filter((item) => {
@@ -171,10 +181,13 @@ function Dashboard({ session, onSignOut }) {
 
   const name = session.user.full_name || session.user.username
   const firstName = name.split(' ')[0]
-  return <div className="dashboard"><aside className="dash-sidebar"><Brand/><div className="sidebar-label">WORKSPACE</div><button className={view === 'overview' ? 'active' : ''} onClick={() => setView('overview')}><Box size={18}/> Overview</button><button className={view === 'pos' ? 'active' : ''} onClick={() => setView('pos')}><ShoppingCart size={18}/> Point of sale <span>{cart.length || ''}</span></button><button className={view === 'expiry' ? 'active' : ''} onClick={() => setView('expiry')}><Bell size={18}/> Expiry alerts <span>{expiring.length}</span></button><div className="sidebar-bottom"><div className="avatar">{firstName[0]?.toUpperCase()}</div><div><strong>{name}</strong><small>{session.user.role}</small></div></div></aside>
-    <main className="dash-main"><header><span>Workspace / {view === 'pos' ? 'Point of sale' : view === 'expiry' ? 'Expiry alerts' : 'Overview'}</span><button onClick={onSignOut}>Sign out <ArrowRight size={16}/></button></header>
+  const viewName = { overview: 'Overview', inventory: 'Inventory', pos: 'Point of sale', sales: 'Sales history', expiry: 'Expiry alerts' }[view]
+  return <div className="dashboard"><aside className="dash-sidebar"><Brand/><div className="sidebar-label">WORKSPACE</div><button className={view === 'overview' ? 'active' : ''} onClick={() => setView('overview')}><Box size={18}/> Overview</button><button className={view === 'inventory' ? 'active' : ''} onClick={() => setView('inventory')}><PackageCheck size={18}/> Inventory <span>{medicines.length}</span></button><button className={view === 'pos' ? 'active' : ''} onClick={() => setView('pos')}><ShoppingCart size={18}/> Point of sale <span>{cart.length || ''}</span></button><button className={view === 'sales' ? 'active' : ''} onClick={() => setView('sales')}><ClipboardList size={18}/> Sales history</button><button className={view === 'expiry' ? 'active' : ''} onClick={() => setView('expiry')}><Bell size={18}/> Expiry alerts <span>{expiring.length}</span></button><div className="sidebar-bottom"><div className="avatar">{firstName[0]?.toUpperCase()}</div><div><strong>{name}</strong><small>{session.user.role}</small></div></div></aside>
+    <main className="dash-main"><header><span>Workspace / {viewName}</span><button onClick={onSignOut}>Sign out <ArrowRight size={16}/></button></header>
       {view === 'overview' && <Overview firstName={firstName} metrics={metrics} medicines={medicines} state={state}/>}
+      {view === 'inventory' && <InventoryManager medicines={medicines} apiCall={authenticatedApi} onChanged={loadInventory}/>}
       {view === 'pos' && <POS medicines={sellable} search={search} setSearch={setSearch} cart={cart} addToCart={addToCart} changeQuantity={changeQuantity} total={cartTotal} customer={customer} setCustomer={setCustomer} checkout={checkout} completeSale={completeSale}/>}
+      {view === 'sales' && <SalesHistory sales={sales} state={salesState}/>}
       {view === 'expiry' && <ExpiryView items={expiring} today={today} checkout={checkout} sendExpiryEmail={sendExpiryEmail} canEmail={session.user.role === 'admin'}/>}
     </main></div>
 }
@@ -185,6 +198,52 @@ function Overview({ firstName, metrics, medicines, state }) {
 
 function InventoryTable({ medicines, loading }) {
   return <section className="inventory-card"><div className="inventory-heading"><div><span>DATABASE RECORDS</span><h2>Medicine inventory</h2></div><strong>{loading ? 'Loading…' : `${medicines.length} items`}</strong></div>{!loading && medicines.length === 0 && <p className="empty-state">No medicine records found.</p>}{medicines.length > 0 && <div className="table-scroll"><table><thead><tr><th>Medicine</th><th>Batch</th><th>Stock</th><th>Expiry</th><th>Supplier</th></tr></thead><tbody>{medicines.map((medicine) => <tr key={medicine.id}><td><strong>{medicine.name}</strong><small>{medicine.category}</small></td><td>{medicine.batch_number}</td><td><span className={Number(medicine.stock_quantity) <= Number(medicine.min_stock_level) ? 'stock-low' : 'stock-ok'}>{medicine.stock_quantity}</span></td><td>{medicine.expiry_date}</td><td>{medicine.supplier_name || '—'}</td></tr>)}</tbody></table></div>}</section>
+}
+
+const emptyMedicine = { name: '', generic_name: '', category: 'General', batch_number: '', stock_quantity: 0, min_stock_level: 10, expiry_date: '', unit_price: 0, location: 'Main Shelf' }
+
+function InventoryManager({ medicines, apiCall, onChanged }) {
+  const [query, setQuery] = useState('')
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState(emptyMedicine)
+  const [message, setMessage] = useState({ busy: false, error: '', success: '' })
+  const shown = medicines.filter((item) => `${item.name} ${item.generic_name || ''} ${item.batch_number}`.toLowerCase().includes(query.toLowerCase()))
+  const update = (key) => (event) => setForm((value) => ({ ...value, [key]: event.target.value }))
+
+  function openForm(item = null) {
+    setEditing(item?.id || 'new')
+    setForm(item ? { ...emptyMedicine, ...item, expiry_date: String(item.expiry_date).slice(0, 10) } : emptyMedicine)
+    setMessage({ busy: false, error: '', success: '' })
+  }
+
+  async function save(event) {
+    event.preventDefault(); setMessage({ busy: true, error: '', success: '' })
+    try {
+      const path = editing === 'new' ? '/medicines' : `/medicines/${editing}`
+      const method = editing === 'new' ? 'POST' : 'PUT'
+      const data = await apiCall(path, { method, body: JSON.stringify({ ...form, stock_quantity: Number(form.stock_quantity), min_stock_level: Number(form.min_stock_level), unit_price: Number(form.unit_price) }) })
+      setMessage({ busy: false, error: '', success: data.message }); setEditing(null); onChanged()
+    } catch (error) { setMessage({ busy: false, error: error.message, success: '' }) }
+  }
+
+  async function remove(item) {
+    if (!window.confirm(`Delete ${item.name} (${item.batch_number})?`)) return
+    setMessage({ busy: true, error: '', success: '' })
+    try { const data = await apiCall(`/medicines/${item.id}`, { method: 'DELETE' }); setMessage({ busy: false, error: '', success: data.message }); onChanged() }
+    catch (error) { setMessage({ busy: false, error: error.message, success: '' }) }
+  }
+
+  return <div className="dash-content inventory-page"><div className="section-toolbar"><div><div className="dash-welcome">STOCK CONTROL</div><h1>Inventory management</h1><p>Add medicines and keep quantities, prices and expiry dates accurate.</p></div><button className="primary-action" onClick={() => openForm()}><Plus size={17}/> Add medicine</button></div>
+    <div className="inventory-tools"><div className="pos-search"><Search size={18}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search medicine or batch…"/></div><strong>{shown.length} records</strong></div>
+    {message.error && <p className="checkout-error">{message.error}</p>}{message.success && <p className="success-message">{message.success}</p>}
+    <section className="inventory-card"><div className="table-scroll"><table><thead><tr><th>Medicine</th><th>Batch</th><th>Stock</th><th>Price</th><th>Expiry</th><th>Location</th><th>Actions</th></tr></thead><tbody>{shown.map((item) => <tr key={item.id}><td><strong>{item.name}</strong><small>{item.generic_name || item.category}</small></td><td>{item.batch_number}</td><td><span className={Number(item.stock_quantity) <= Number(item.min_stock_level) ? 'stock-low' : 'stock-ok'}>{item.stock_quantity}</span></td><td>LKR {Number(item.unit_price).toFixed(2)}</td><td>{item.expiry_date}</td><td>{item.location || '—'}</td><td><div className="row-actions"><button onClick={() => openForm(item)} aria-label={`Edit ${item.name}`}><Pencil/></button><button className="danger" onClick={() => remove(item)} aria-label={`Delete ${item.name}`}><Trash2/></button></div></td></tr>)}</tbody></table></div>{shown.length === 0 && <p className="empty-state">No matching medicines found.</p>}</section>
+    {editing && <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setEditing(null)}><form className="medicine-modal" onSubmit={save}><div className="modal-title"><div><span>INVENTORY RECORD</span><h2>{editing === 'new' ? 'Add medicine' : 'Edit medicine'}</h2></div><button type="button" onClick={() => setEditing(null)}><X/></button></div><div className="medicine-fields"><label>Medicine name<input value={form.name} onChange={update('name')} required/></label><label>Generic name<input value={form.generic_name || ''} onChange={update('generic_name')}/></label><label>Category<input value={form.category} onChange={update('category')} required/></label><label>Batch number<input value={form.batch_number} onChange={update('batch_number')} required/></label><label>Stock quantity<input type="number" min="0" value={form.stock_quantity} onChange={update('stock_quantity')} required/></label><label>Minimum stock<input type="number" min="0" value={form.min_stock_level} onChange={update('min_stock_level')} required/></label><label>Unit price (LKR)<input type="number" min="0" step="0.01" value={form.unit_price} onChange={update('unit_price')} required/></label><label>Expiry date<input type="date" value={form.expiry_date} onChange={update('expiry_date')} required/></label><label className="field-wide">Shelf location<input value={form.location} onChange={update('location')}/></label></div>{message.error && <p className="checkout-error">{message.error}</p>}<button className="submit-button" disabled={message.busy}>{message.busy ? 'Saving…' : 'Save medicine'} {!message.busy && <Check size={18}/>}</button></form></div>}
+  </div>
+}
+
+function SalesHistory({ sales, state }) {
+  const revenue = sales.reduce((sum, sale) => sum + Number(sale.total), 0)
+  return <div className="dash-content"><div className="section-toolbar"><div><div className="dash-welcome">TRANSACTIONS</div><h1>Sales history</h1><p>Latest completed sales recorded by the point of sale.</p></div><div className="sales-total"><small>Total shown</small><strong>LKR {revenue.toFixed(2)}</strong></div></div>{state.error && <div className="data-error"><strong>Could not load sales</strong><p>{state.error}</p></div>}<section className="inventory-card"><div className="table-scroll"><table><thead><tr><th>Receipt</th><th>Customer</th><th>Cashier</th><th>Payment</th><th>Date</th><th>Total</th></tr></thead><tbody>{sales.map((sale) => <tr key={sale.id}><td><strong>{sale.sale_number}</strong><small>{sale.status}</small></td><td>{sale.customer_name || 'Walk-in customer'}</td><td>{sale.cashier_name || '—'}</td><td><span className="payment-pill">{sale.payment_method}</span></td><td>{new Date(sale.created_at).toLocaleString()}</td><td><strong>LKR {Number(sale.total).toFixed(2)}</strong></td></tr>)}</tbody></table></div>{!state.loading && sales.length === 0 && <p className="empty-state">No sales recorded yet.</p>}{state.loading && <p className="empty-state">Loading sales…</p>}</section></div>
 }
 
 function POS({ medicines, search, setSearch, cart, addToCart, changeQuantity, total, customer, setCustomer, checkout, completeSale }) {
