@@ -17,11 +17,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- 1. Insert Initial Users
 -- Default Demo User password is: "MediTrack2026!"
--- BCrypt hash for "MediTrack2026!" with 10 rounds:
--- $2a$10$7Z8v6nNq3qK.J0yZ7q7Y4uJ8v6nNq3qK.J0yZ7q7Y4uJ8v6nNq3qK (we will also seed via script)
+-- BCrypt hash for the documented demo password (10 rounds).
 INSERT INTO users (username, email, password_hash, full_name, role) VALUES
-('alex', 'demo@meditrack.app', '$2a$10$A6Pz69gYp27w/wMvPZ9z.e8w9u7/tF00z61A9vJ6y2F5V9xK7.aKi', 'Alex Morgan', 'admin'),
-('john_staff', 'staff@meditrack.app', '$2a$10$A6Pz69gYp27w/wMvPZ9z.e8w9u7/tF00z61A9vJ6y2F5V9xK7.aKi', 'John Doe', 'staff');
+('alex', 'demo@meditrack.app', '$2a$10$ucMEPwjMVbVVMQToWMpeLeyhcecoMP5sxwDACZ5efmxAT9BjmEA8S', 'Alex Morgan', 'admin'),
+('john_staff', 'staff@meditrack.app', '$2a$10$ucMEPwjMVbVVMQToWMpeLeyhcecoMP5sxwDACZ5efmxAT9BjmEA8S', 'John Doe', 'staff');
 
 -- 2. Insert Suppliers
 INSERT INTO suppliers (id, name, contact_person, email, phone, address) VALUES

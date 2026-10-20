@@ -5,9 +5,12 @@ import pool from '../config/db.js'
 // POST /api/auth/register
 export const register = async (req, res, next) => {
   try {
-    const { username, email, password, full_name, role = 'staff' } = req.body
+    const { password, role = 'staff' } = req.body
+    const username = typeof req.body.username === 'string' ? req.body.username.trim() : ''
+    const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : ''
+    const full_name = typeof req.body.full_name === 'string' ? req.body.full_name.trim() : ''
 
-    if (!username || !email || !password || !full_name) {
+    if (!username || !email || typeof password !== 'string' || !password || !full_name) {
       return res.status(400).json({
         success: false,
         message: 'Username, email, password, and full name are required.',
@@ -65,19 +68,22 @@ export const register = async (req, res, next) => {
 // POST /api/auth/login
 export const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body
+    const { password } = req.body
+    const email = typeof req.body.email === 'string' ? req.body.email.trim() : ''
 
-    if (!email || !password) {
+    if (!email || typeof password !== 'string' || !password) {
       return res.status(400).json({
         success: false,
         message: 'Please provide email and password.',
       })
     }
 
-    // Query user by email or username
+    // Email identifiers must not also match another account’s username.
     const [rows] = await pool.query(
-      `SELECT * FROM users WHERE email = ? OR username = ?`,
-      [email.toLowerCase(), email]
+      email.includes('@')
+        ? `SELECT * FROM users WHERE email = ?`
+        : `SELECT * FROM users WHERE username = ?`,
+      [email.includes('@') ? email.toLowerCase() : email]
     )
 
     if (rows.length === 0) {
