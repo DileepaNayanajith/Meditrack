@@ -36,7 +36,7 @@ services:
       DB_NAME: meditrack_db
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: 24h
-      CLIENT_URL: http://localhost:8080
+      CLIENT_URL: http://localhost:${FRONTEND_PORT:-8081}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
@@ -56,7 +56,7 @@ services:
         VITE_API_URL: /api
     restart: unless-stopped
     ports:
-      - "8081:80"
+      - "${FRONTEND_PORT:-8081}:80"
     depends_on:
       backend:
         condition: service_healthy
